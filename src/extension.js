@@ -158,14 +158,18 @@ const WEATHER_DEBUG_EXTENSION = 'debug-extension';			// Weather extension settin
 
 		this.location = this.city;
 			if(this.city_name)
-			{											this.status("Location ("+this.city_name+") loaded");
-			this.info = new GWeather.Info({ world: this.world,
+			{
+				this.status("Location ("+this.city_name+") loaded");
+				global.log("L " + this.world + " " + this.location);
+				this.info = new GWeather.Info({ world: this.world,
                                        location: this.location,
                                        forecast_type: GWeather.ForecastType.LIST,
                                        enabled_providers: (GWeather.Provider.METAR |
                                                            GWeather.Provider.YR_NO |
 							   GWeather.Provider.YAHOO |
-							   GWeather.Provider.IWIN) });				this.status("Information loaded");
+							   GWeather.Provider.IWIN) });
+							   
+							   this.status("Information loaded");
 			this.infoC = this.info.connect("updated",function(){that.refresh();that.status(0);});	this.status("Information connection started");
 			}
 			else
@@ -429,10 +433,11 @@ const WEATHER_DEBUG_EXTENSION = 'debug-extension';			// Weather extension settin
 														this.status("Forecast "+i+" (Day : "+day+") :");
 				if(typeof forecast[day] == "undefined")
 				{										this.status("Init new day ("+day+")");
-				initialTemp = forecastList[i].get_value_temp(unit)[1];				this.status("Initial temperature : "+initialTemp);
+				initialTemp = forecastList[i].get_value_temp(unit)[1];
+				this.status("Initial temperature : "+initialTemp);
 				forecast[day] = {hour : []};
-				forecast[day].minTemp = initialTemp;
-				forecast[day].maxTemp = initialTemp;
+				forecast[day].minTemp = forecastList[i].get_value_temp_min(unit)[1];
+				forecast[day].maxTemp = forecastList[i].get_value_temp_max(unit)[1];
 				forecast[day].icon = "";
 				forecast[day].dayText = "";
 														this.status("Searching day name :");
@@ -474,12 +479,16 @@ const WEATHER_DEBUG_EXTENSION = 'debug-extension';			// Weather extension settin
 			hour = nowDate.get_hour();
 			forecast[day].hour[hour] = forecastList[i];						this.status("Forecast for "+forecast[day].dayText+" at "+hour);
 
-			let temp = forecastList[i].get_value_temp(unit)[1];					this.status("Temp : "+temp);
+			let temp = forecastList[i].get_value_temp(unit)[1];
+			this.status("Temp : "+temp);
+			
+			forecast[day].minTemp = forecastList[i].get_value_temp_min(unit)[1];
+			forecast[day].maxTemp = forecastList[i].get_value_temp_max(unit)[1];
 
-				if(temp <= forecast[day].minTemp)
+			if(temp <= forecast[day].minTemp)
 				forecast[day].minTemp = temp;
 
-				if(temp >= forecast[day].maxTemp)
+			if(temp >= forecast[day].maxTemp)
 				forecast[day].maxTemp = temp;
 
 			oldDate = nowDate;
@@ -1313,17 +1322,17 @@ const WEATHER_DEBUG_EXTENSION = 'debug-extension';			// Weather extension settin
 
 		get city()
 		{
-		let cities = this.cities;
-		let city = cities[this.actual_city];
-		return city;
+			let cities = this.cities;
+			let city = cities[this.actual_city];
+			return city;
 		},
 
 		set city(v)
 		{
-		let cities = this.cities;
-		cities.splice(this.actual_city,1,v);
-		this.cities = cities;
-		return 0;
+			let cities = this.cities;
+			cities.splice(this.actual_city,1,v);
+			this.cities = cities;
+			return 0;
 		},
 
 		get city_name()
